@@ -23,4 +23,4 @@ mybatis-plus:
     type-aliases-package: com.hmdp.entity
 logging:
   level:
-    com.hmdp: debug
+    com.hmdp: info

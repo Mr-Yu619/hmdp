@@ -11,8 +11,9 @@ import java.time.format.DateTimeFormatter;
 生成唯一id的，利用了时间戳和redis里的自增
  */
 
+@Component
 public class RedisIdWorker {
-
+    @Autowired
     private StringRedisTemplate stringRedisTemplate;
     //设置起始时间
     public static final Long BEGIN_TIMESTAMP = 1640995200L;;

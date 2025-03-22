@@ -42,7 +42,7 @@ public class Blog implements Serializable {
 
     private String title;
 
-    private String images;
+    private String image;
 
     private String content;
 
