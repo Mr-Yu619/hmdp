@@ -31,7 +31,7 @@ public class VoucherOrder implements Serializable {
      */
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
-
+    //手动插入主键值
     /**
      * 下单的用户id
      */
