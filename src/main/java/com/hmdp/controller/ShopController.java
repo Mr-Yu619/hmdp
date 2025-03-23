@@ -19,7 +19,7 @@ public class ShopController {
 
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id){
-        return Result.ok(shopService.getById(id));
+        return Result.ok(shopService.queryById(id));
     }
 
     @PostMapping
@@ -41,7 +41,7 @@ public class ShopController {
             @RequestParam(value = "x", required = false) Double x,
             @RequestParam(value = "y", required = false) Double y
     ){
-        return shopService.queryShopByType(typeId, current, x, y);
+        return shopService.queryShopByType(typeId, current,x,y);
     }
 
     @GetMapping("/of/name")

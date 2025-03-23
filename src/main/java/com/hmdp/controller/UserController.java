@@ -37,6 +37,12 @@ public class UserController {
         return userService.login(loginFormDTO,session);
     }
 
+    @PostMapping("/logout")
+    public Result logOut(){
+        UserHolder.removeUser();
+        return Result.ok();
+    }
+
     @GetMapping("/me")
     public Result me(){
         UserDTO userDTO = UserHolder.getUser();

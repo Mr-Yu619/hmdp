@@ -8,7 +8,7 @@ CREATE TABLE `tb_blog`(
     `shop_id` bigint(20) NOT NULL COMMENT '商户id',
     `user_id` bigint(20) UNSIGNED NOT NULL COMMENT '用户id',
     `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '标题',
-    `image` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '探店的照片，最多9张，多张以\",\"隔开',
+    `images` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '探店的照片，最多9张，多张以\",\"隔开',
     `content` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '探店的文字描述',
     `liked` int(8) UNSIGNED NULL DEFAULT 0 COMMENT '点赞数量',
     `comments` int(8) UNSIGNED NULL DEFAULT NULL COMMENT '评论数量',

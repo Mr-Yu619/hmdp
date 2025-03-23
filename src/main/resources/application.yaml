@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8081
 spring:
   application:
     name: hmdp
@@ -23,4 +23,4 @@ mybatis-plus:
     type-aliases-package: com.hmdp.entity
 logging:
   level:
-    com.hmdp: info
+    com.hmdp: debug
