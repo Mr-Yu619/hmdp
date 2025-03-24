@@ -9,5 +9,5 @@ import java.util.List;
 public interface VoucherMapper extends BaseMapper<Voucher> {
     //TODO
     // 这里的@Parm有什么用
-    List<Voucher> queryVoucherofShop(@Param("shopId") Long shopId);
+    List<Voucher> queryVoucherOfShop(@Param("shopId") Long shopId);
 }

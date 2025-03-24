@@ -24,7 +24,7 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
     @Override
     public Result queryVoucherOfShop(Long shopId) {
         //getBaseMapper 是ServiceImpl类中的方法，返回的是VoucherMapper对象，通过Bean管理的
-        List<Voucher> vouchers = getBaseMapper().queryVoucherofShop(shopId);
+        List<Voucher> vouchers = getBaseMapper().queryVoucherOfShop(shopId);
         return Result.ok(vouchers);
     }
 
