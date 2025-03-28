@@ -30,7 +30,7 @@ public class Blog implements Serializable {
 
     private Long userId;
 
-    //这里加了三个不存在于表中的数据项
+    //这里加了三个不存在于表中的数据项,这三个是用来展示的
     @TableField(exist = false)
     private String icon;
 

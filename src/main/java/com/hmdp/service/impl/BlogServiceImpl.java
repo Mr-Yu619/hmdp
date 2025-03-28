@@ -51,10 +51,56 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             return Result.fail("博客不存在或已经被删除");
         }
         // 查询博客的作者信息并更新，以及当前用户是否喜欢博客
-        queryBlogUser(blog);
-        queryBlogLikes(id);
+        setBlogUser(blog);
+        setIsBlogLiked((blog));
         return Result.ok(blog);
     }
+
+    // 查询博客的作者,并据此来更新博客的基本信息，如用户昵称，用户图标，这些都是后加的，要在博客上显示的
+    private void setBlogUser(Blog blog){
+        Long userId = blog.getUserId();
+        User user = userService.getById(userId);
+        blog.setName(user.getNickName());
+        blog.setIcon(user.getIcon());
+    }
+
+    // 查询当前用户是否喜欢了该博客
+    private void setIsBlogLiked(Blog blog){
+        // 1.获取当前用户信息
+        UserDTO userDTO = UserHolder.getUser();
+        // 如果用户未登陆，直接return结束逻辑
+        if(userDTO == null){
+            return;
+        }
+        // 2.判断当前用户是否点赞
+        String key = BLOG_LIKED_KEY + blog.getId();
+        // 获取到在这个Zset中当前用户的值，应该是个时间戳
+        Double score = stringRedisTemplate.opsForZSet().score(key, userDTO.getId().toString());
+        // isLike这个东西不存在于Blog表中，只是一个为每一个用户特有的
+        blog.setIsLike(score != null);
+    }
+    // 查询博客的最开始的前5个喜欢
+    @Override
+    public Result queryBlogLikes(Integer id) {
+        String key = BLOG_LIKED_KEY + id;
+        // zrange key 0 4 查询zset中前5个元素
+        Set<String> top5 = stringRedisTemplate.opsForZSet().range(key, 0, 4);
+        // 如果是空的（可能没人点赞），直接返回一个空集合
+        if(top5 == null || top5.isEmpty()){
+            return Result.ok(Collections.emptyList());
+        }
+        List<Long> ids = top5.stream().map(Long::valueOf).collect(Collectors.toList());
+        //使用StrUtil.join(",", ids)将ID列表拼接成逗号分隔的字符串，用于构建SQL的ORDER BY FIELD子句。
+        String idsStr = StrUtil.join(",", ids);
+        // select * from tb_user where id in (ids[0], ids[1], ...) order by field(id, id[0], id[1] ...)
+        List<UserDTO> userDTOS = userService.query().in("id", ids)
+                .last("order by field(id," + idsStr + ")")
+                .list().stream()
+                .map(user -> BeanUtil.copyProperties(user, UserDTO.class))
+                .collect(Collectors.toList());
+        return Result.ok(userDTOS);
+    }
+
 
     // 查询点赞高的博客，排序好，每一个博客都需要写好那新加的三项
     @Override
@@ -65,8 +111,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         // 获取当前页数据
         List<Blog> records = page.getRecords();
         records.forEach( blog -> {
-            queryBlogUser(blog);
-            isBlogLiked(blog);
+            setBlogUser(blog);
+            setIsBlogLiked(blog);
         });
         return Result.ok(records);
     }
@@ -95,27 +141,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         return Result.ok();
     }
 
-    // 查询博客的最开始的前5个喜欢
-    @Override
-    public Result queryBlogLikes(Integer id) {
-        String key = BLOG_LIKED_KEY + id;
-        // zrange key 0 4 查询zset中前5个元素
-        Set<String> top5 = stringRedisTemplate.opsForZSet().range(key, 0, 4);
-        // 如果是空的（可能没人点赞），直接返回一个空集合
-        if(top5 == null || top5.isEmpty()){
-            return Result.ok(Collections.emptyList());
-        }
-        List<Long> ids = top5.stream().map(Long::valueOf).collect(Collectors.toList());
-        //使用StrUtil.join(",", ids)将ID列表拼接成逗号分隔的字符串，用于构建SQL的ORDER BY FIELD子句。
-        String idsStr = StrUtil.join(",", ids);
-        // select * from tb_user where id in (ids[0], ids[1], ...) order by field(id, id[0], id[1] ...)
-        List<UserDTO> userDTOS = userService.query().in("id", ids)
-                .last("order by field(id," + idsStr + ")")
-                .list().stream()
-                .map(user -> BeanUtil.copyProperties(user, UserDTO.class))
-                .collect(Collectors.toList());
-        return Result.ok(userDTOS);
-    }
+
 
     // 保存博客，并且把博客id推送给粉丝
     @Override
@@ -128,11 +154,11 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         if(!isSuccess){
             return Result.fail("新增笔记失败");
         }
-        // 如果保存成功，则获取保存笔记的发布者id，用该id去follow_user表中查对应的粉丝id，推送
+        // follow_user_id 代表user关注的人的id
         List<Follow> follows = followService.query().eq("follow_user_id", userDTO.getId()).list();
         for (Follow follow : follows) {
             Long userId = follow.getUserId();
-            // 相当于一个邮箱，每个用户都有
+            //每个用户都有
             String key = FEED_KEY + userId;
             stringRedisTemplate.opsForZSet().add(key,  blog.getId().toString(), System.currentTimeMillis());
         }
@@ -173,8 +199,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         List<Blog> blogs = query().in("ids", ids).last("ORDER BY FIELD(id" + idsStr + ")").list();
 
         for (Blog blog : blogs) {
-            queryBlogUser(blog);
-            isBlogLiked(blog);
+            setBlogUser(blog);
+            setIsBlogLiked(blog);
         }
 
         ScrollResult scrollResult = new ScrollResult();
@@ -184,28 +210,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         return Result.ok(scrollResult);
     }
 
-    // 查询当前用户是否喜欢了该博客
-    private void isBlogLiked(Blog blog){
-        // 1.获取当前用户信息
-        UserDTO userDTO = UserHolder.getUser();
-        // 如果用户未登陆，直接return结束逻辑
-        if(userDTO == null){
-            return;
-        }
-        // 2.判断当前用户是否点赞
-        String key = BLOG_LIKED_KEY + blog.getId();
-        // 获取到在这个Zset中当前用户的值，应该是个时间戳
-        Double score = stringRedisTemplate.opsForZSet().score(key, userDTO.getId().toString());
-        // isLike这个东西不存在于Blog表中，只是一个为每一个用户特有的
-        blog.setIsLike(score != null);
-    }
 
-    // 查询博客的作者,并据此来更新博客的基本信息，如用户昵称，用户图标，这些都是后加的，要在博客上显示的
-    private void queryBlogUser(Blog blog){
-        Long userId = blog.getUserId();
-        User user = userService.getById(userId);
-        blog.setName(user.getNickName());
-        blog.setIcon(user.getIcon());
-    }
+
+
 
 }

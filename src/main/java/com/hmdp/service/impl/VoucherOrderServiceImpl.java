@@ -26,8 +26,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
     // 秒杀的逻辑应该是这样的
     /*
-    加了一个令牌桶算法，进行一个限流
-    先访问缓存，这时候有三种情况
+    加了一个令牌桶算法，进行一个限流, 然后执行redis脚本
+    redis脚本中，对缓存
     0.缓存中没有这个键，此时redis中还没有这个数据（其实这一步可以在添加秒杀优惠券的时候就放进去，然后设置逻辑过期，但问题是没设计这个接口md）
     1.缓存中有这个键，但是用户没有购买权限
     2.缓存中有这个键，且有购买权限，但是库存不够了

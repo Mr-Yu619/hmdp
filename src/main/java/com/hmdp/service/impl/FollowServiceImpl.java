@@ -89,5 +89,6 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             BeanUtil.copyProperties(user, UserDTO.class)
         ).collect(Collectors.toList());
         return Result.ok(userDTOList);
+
     }
 }

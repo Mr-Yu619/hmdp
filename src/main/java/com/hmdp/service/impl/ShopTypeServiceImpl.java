@@ -45,14 +45,12 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
             return Result.fail("店铺类型不存在");
         }
 
-
-
         for (ShopType shopType : tmp) {
             String jsonStr = JSONUtil.toJsonStr(shopType);
             shopTypes.add(jsonStr);
         }
 
-        stringRedisTemplate.opsForList().leftPushAll(CACHE_SHOP_KEY, shopTypes);
+        stringRedisTemplate.opsForList().leftPushAll(CACHE_SHOP_TYPE_KEY, shopTypes);
 
         return Result.ok(tmp);
     }
