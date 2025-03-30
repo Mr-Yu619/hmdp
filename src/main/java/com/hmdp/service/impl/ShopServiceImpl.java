@@ -239,6 +239,8 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                     .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
             return Result.ok(page.getRecords());
         }
+
+        // 如果redis中查到了GEO
         List<GeoResult<RedisGeoCommands.GeoLocation<String>>> list = results.getContent();
         if (list.size() <= from) {
             // 没有下一页了，结束

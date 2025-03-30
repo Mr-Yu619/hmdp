@@ -64,7 +64,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         blog.setIcon(user.getIcon());
     }
 
-    // 查询当前用户是否喜欢了该博客
+    // 设置当前用户是否喜欢了该博客
     private void setIsBlogLiked(Blog blog){
         // 1.获取当前用户信息
         UserDTO userDTO = UserHolder.getUser();
@@ -196,7 +196,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         }
 
         String idsStr = StrUtil.join(",", ids);
-        List<Blog> blogs = query().in("ids", ids).last("ORDER BY FIELD(id" + idsStr + ")").list();
+        List<Blog> blogs = query().in("ids", ids).last("ORDER BY FIELD(id," + idsStr + ")").list();
 
         for (Blog blog : blogs) {
             setBlogUser(blog);
@@ -209,9 +209,5 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         scrollResult.setMinTime(minTime);
         return Result.ok(scrollResult);
     }
-
-
-
-
 
 }

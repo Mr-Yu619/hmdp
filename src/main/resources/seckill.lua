@@ -13,7 +13,7 @@ local orderKey = 'seckill:order:' .. voucherId
 
 --3.脚本业务
 --3.1判断库存是否充足
-if(tonumber(redis.call('get', stockKey) <= 0) then
+if(tonumber(redis.call('get', stockKey)) <= 0) then
     -- 3.2库存不足 返回1
     return 1
 end
